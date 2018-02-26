@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 命名空间，对sql进行分类化管理，理解为：sql隔离 
+注意：使用mapper代理方法开发，namespace有特殊的重要作用,它等于map接口的地址-->
+<mapper namespace="cn.uestc.ssm.dao.UserMapper">
+    <!-- id：标识 映射文件中的sql，将sql语句封装到mapperStatement对象中，所以称为statement的id -->
+
+    <insert id="regist" parameterType="cn.uestc.ssm.po.Person" useGeneratedKeys="true" keyProperty="pid">
+    	insert into person (username,password,nickname,tel,pimage) 
+    	values(#{username},#{password},#{nickname},#{tel},#{pimage})
+    </insert>  
+        
+	<resultMap type="cn.uestc.ssm.po.Activity" id="ActivityResult">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="startTime" column="startTime"/>
+		<result property="duringTime" column="duringTime"/>
+		<result property="needPeople" column="needPeople"/>
+		<result property="existingPeople" column="existingPeople"/>
+		<result property="selectedPeople" column="selectedPeople"/>
+		<result property="grades" column="grades"/>
+		<result property="description" column="description"/>
+		<result property="image" column="image"/>
+		<result property="location" column="location"/>	
+			<association property="person" javaType="cn.uestc.ssm.po.Person">		    
+			    <id  column="personId" property="pid" />
+			    <result column="username" property="username"/>
+			    <result column="password" property="password"/>
+			    <result column="nickname" property="nickname"/>
+			    <result column="pimage" property="pimage"/>
+			    <result column="tel" property="tel"/>
+			</association>
+	</resultMap>                    
+	<select id="getActivitiesByKeyword" parameterType="java.lang.String" resultMap="ActivityResult">
+		SELECT a.id,a.name,a.startTime,a.duringTime,a.needPeople,a.existingPeople,a.selectedPeople,a.location,a.description,a.image,
+		p.pid,p.username,p.password,p.nickname,p.pimage FROM  activity a, person p 
+ 		<where>
+ 			a.personId = p.pid 
+ 			AND CONCAT(a.name,a.location,a.description,a.startTime,a.needPeople,a.duringTime,p.nickname) LIKE concat(concat('%',#{name}),'%') 	
+ 		</where> 
+					
+	</select>
+
+
+	<select id="showActivity" resultMap="ActivityResult">
+		select a.id,a.name,a.startTime,a.duringTime,a.needPeople,a.existingPeople,a.selectedPeople,a.location,a.description,a.image,
+		p.pid,p.username,p.password,p.nickname,p.pimage FROM activity a, person p 
+			<where>
+				a.personId = p.pid
+			</where> 
+	</select>
+	
+	
+	<select id="getActivityById" parameterType="java.lang.Integer" resultMap="ActivityResult">
+		SELECT a.id,a.name,a.startTime,a.duringTime,a.location,a.description,a.image,p.pid,p.username,p.password,p.nickname,p.pimage,p.tel 
+				FROM activity a, person p WHERE a.personId=p.pid AND a.id =#{a.id};  
+	</select>
+ 	<!--
+   开启本mapper的namespace下的二级缓存 
+  <cache/>-->
+  
+</mapper>
